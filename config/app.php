@@ -169,6 +169,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Alaouy\Youtube\YoutubeServiceProvider::class,
+        Safaricom\Mpesa\MpesaServiceProvider::class
     ])->toArray(),
 
     /*
@@ -184,6 +185,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
+        'Mpesa'=> \Safaricom\Mpesa\MpesaServiceProvider::class
     ])->toArray(),
 
 ];

@@ -94,7 +94,7 @@ class paymentController extends Controller
         
         $curl_response = curl_exec($curl);
         $returning_response =json_decode($curl_response);
-        return $this -> responseData('payment initiated check your phone',true,$returning_response);
+        return $this -> responseData('payment initiated check your phone to continue',true,$returning_response);
     }
     
     

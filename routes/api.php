@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::post("/v1/prompt-model", [openaiController ::class, 'promptModel']);
 Route::post("/v1/normal-signin", [userController ::class, 'normalSignin']);
 Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
-Route::post("/v1/received-payment-status", [paymentController::class,'callBackFunction']);
+Route::post("/v1/callback-status", [paymentController::class,'callBackFunction']);
 
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */

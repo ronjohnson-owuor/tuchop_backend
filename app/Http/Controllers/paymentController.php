@@ -46,7 +46,7 @@ class paymentController extends Controller
         try{
             $request -> validate([
                 'phone_number' => 'required',
-                'plan_type' => 'required'
+                'payment_type' => 'required'
             ]);
         } catch (ValidationException $th){
             return $this -> responseData('error in processing the message',false,null);
@@ -102,7 +102,6 @@ class paymentController extends Controller
     
     
     
-     /* ========================== start of callback function from mpesa api============== */
      public function callBackFunction(Request $request) {
         try{
             /* retrieve the request from the callback url */

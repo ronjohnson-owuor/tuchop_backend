@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Receipt;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +22,20 @@ class paymentController extends Controller
             'data'=> $data
         ]);  
 }
+
+    // determine which plan the user wants to pay for and return the price in dollars
+    public function whichPlan($plan_number){
+        $plan_number = intval($plan_number);
+        
+        $planArray = array(
+            0 =>['name'=>"Basic", "price"=>10.99],
+            1 =>["name"=>"Pro","price"=>20.99],
+            2 =>["name"=>"yearly","price"=>210.99]   
+        );
+        /* ensure to apply coversion rate here before returning the price */
+        return intVal($planArray[ $plan_number]['price']);
+        
+    }
 
     /* generate token for the stk push */
     public function generate_access_token()
@@ -59,7 +75,7 @@ class paymentController extends Controller
         $timestamp= Carbon::rawParse('now')->format('YmdHms');
         /* password is the combination of bussiness shortcode pass key and timestamp to base64 */
         $password = base64_encode($BusinessShortCode.$passkey.$timestamp);
-        $Amount= 1;
+        $Amount= $this ->whichPlan($request->payment_type);
         $PartyA =intval($request ->phone_number);
         $PartyB = env("MPESA_PARTY_B"); /* partyB is the same as the bussiness shortcode */
         $url = env('MPESA_REQUEST_PROCESSING_URL');
@@ -160,4 +176,22 @@ class paymentController extends Controller
             Log::info("there was an error in storing callback.json in the json ERROR =>".$exe ->getMessage());
         }
     }
+    
+    function confirmReceipt(Request $request){
+        $user = Auth::user();
+        $receipt = $request -> receipt;
+        $plan_type = $request ->plan;
+        
+        $receipt_exist = Receipt::where('receipt',$receipt) -> where("confirmed",false) ->first();
+        if($receipt_exist){
+            $receipt_exist ->confirmed = true;
+            $receipt_exist ->save();
+            /* TODO: update user membership plan here */
+            return $this ->responseData('confirmed payment successfull and plan upgraded',true,null);
+        }else{
+            return $this ->responseData('payment unsucessfull if there is an error please contact us.',false,null); 
+        }
+    }
+    
+    
 }

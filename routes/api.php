@@ -33,4 +33,5 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/rename-media", [uploadController::class,'renameMedia']);
    Route::post("/v1/delete-media", [uploadController::class,'deleteMedia']);
    Route::post("/v1/mobile-payment", [paymentController::class,'mobilePayment']);
+   Route::post("/v1/confirm-payment", [paymentController::class,'confirmReceipt']);
 });

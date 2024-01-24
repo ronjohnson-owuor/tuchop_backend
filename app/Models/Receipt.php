@@ -11,7 +11,8 @@ class Receipt extends Model
     
     protected $fillable = [
         "receipt",
-        "phone",
-        "confirmed"
+        "userid",
+        "completed",
+        "plan"
     ];
 }

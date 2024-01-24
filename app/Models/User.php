@@ -22,6 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'picture',
+        'planType',
+        'expiry_date',
         'email_verified',
     ];
 

@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('receipts', function (Blueprint $table) {
             $table->id();
             $table ->text("receipt");
-            $table -> text('phone');
-            $table ->boolean('confirmed');
+            $table -> text('userid');
+            $table -> integer('plan');
+            $table ->boolean('completed');
             $table->timestamps();
         });
     }

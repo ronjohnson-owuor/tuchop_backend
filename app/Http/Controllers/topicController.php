@@ -222,6 +222,12 @@ class topicController extends Controller
     }
 
     $videos = json_decode($question_location->videos) ?? [];
+    
+    foreach($videos as $video){
+        if($video -> video_id == $video_id){
+            return $this -> responseData('video already saved',false,null);
+        }
+    }
 
     $new_video = [
         'index' => intval($question_id),

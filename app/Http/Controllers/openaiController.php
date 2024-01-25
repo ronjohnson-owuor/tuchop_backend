@@ -24,6 +24,8 @@ class openaiController extends Controller
         }
     }
     
+    
+    /* this is for asking basic chat from to and from the model its the one used for the free version */
     public function promptModel(Request $request){
         
         try{
@@ -44,4 +46,12 @@ class openaiController extends Controller
         }
 
     }
+    
+    
+    public function  askPDF(){
+        
+    }
+    
+    
+    
 }

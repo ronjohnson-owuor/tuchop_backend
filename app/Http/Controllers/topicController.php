@@ -153,7 +153,8 @@ class topicController extends Controller
             'submodule_id' =>$submodule_id,
             'question' => $question,
             'answer' =>$answer,
-            'follow_up_question' =>$follow_up_question
+            'follow_up_question' =>$follow_up_question,
+            'videos' => '[]'
         ]);
         return $this ->responseData('data saved',true,$data);
     }

@@ -28,6 +28,7 @@ class openaiController extends Controller
     /* this is for asking basic chat from to and from the model its the one used for the free version */
     public function promptModel(Request $request){
         
+        /* ask a  genral question */
         try{
             $user_request = $request -> message;
             $api_key = env("OPENAI_KEY");
@@ -47,11 +48,22 @@ class openaiController extends Controller
 
     }
     
-    
+    /* ask question relatd to the pdf */
     public function  askPDF(){
         
     }
     
+    
+    
+    
+    /* ask question from the image */
+    public function promtImage(){
+        
+    }    
+    
+    
+    
+    /* get topic that someone is learning */
     
     
 }

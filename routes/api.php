@@ -8,9 +8,10 @@ use App\Http\Controllers\userController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
-Route::post("/v1/prompt-model", [openaiController ::class, 'promptModel']);
+Route::post("/v1/ask-image", [openaiController ::class, 'askImage']);
+Route::post("/v1/get-topic", [openaiController ::class, 'getTopic']);
 Route::post("/v1/normal-signin", [userController ::class, 'normalSignin']);
+Route::post("/v1/prompt-image", [openaiController ::class, 'promtImage']);
 Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
 Route::post("/v1/callback-status", [paymentController::class,'callBackFunction']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
@@ -35,4 +36,5 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/delete-media", [uploadController::class,'deleteMedia']);
    Route::post("/v1/card-payment", [paymentController::class,'cardPayment']);
    Route::post("/v1/confirm-payment", [paymentController::class,'confirmReceipt']);
+   Route::post("/v1/normal-chat", [openaiController ::class, 'normalChat']);
 });

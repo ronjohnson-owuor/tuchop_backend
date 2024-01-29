@@ -92,13 +92,14 @@ class openaiController extends Controller
     // ask questions relatd to an image a user has give
     public function askImage(Request $request){
         $apiKey = env("PERPLEXITY_AI_API_KEY");
-        $question = $request ->message;
+        $question = $request ->question;
+        $image_url = $request -> url;
         $body = json_encode([
             "model" => "mistral-7b-instruct",
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => "Be precise and concise. Give your answer in the format {question:question the user asked,image:url of the image in which the question was asked ,answer:your answer,follow_up_questions:array of follow up question maximum 5}. Give a valid JSON format for all your responses, nothing to come before or after the JSON format. If it's a math question, make sure you explain your steps .use the image link to answer questions from or that are in the image"
+                    "content" => "Be precise and concise. Give your answer in the format {question:question the user asked in string,image:url of the image from  which the question was asked string,answer:your answer in string,follow_up_questions:array of follow up question maximum 5}.  Give a valid JSON format for all your responses, nothing to come before or after the JSON format.For math questions make sure to show your workings for the question within the answer section.use the image link to answer questions from or that are in the image"
                 ],
                 [
                     "role" => "user",
@@ -106,7 +107,7 @@ class openaiController extends Controller
                 ],
                 [
                     "role" => "user",
-                    "content" => 'https://machizi.s3.amazonaws.com/tuchopai/images/1706468337tuchopai.png'
+                    "content" => $image_url
                 ]
             ]
         ]);

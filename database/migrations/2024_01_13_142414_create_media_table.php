@@ -18,6 +18,7 @@ return new class extends Migration
             $table ->text('topic_id');
             $table ->text('subtopic_id');
             $table ->text('media_url');
+            $table -> text("sourceId") -> nullable();
             $table ->text('media_type'); /* 0 for image and 1 for files */
             $table->timestamps();
         });

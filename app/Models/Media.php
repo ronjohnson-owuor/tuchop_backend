@@ -14,6 +14,7 @@ class Media extends Model
         'topic_id',
         'subtopic_id',
         'media_url',
-        'media_type'
+        'media_type',
+        'sourceId'
     ];
 }

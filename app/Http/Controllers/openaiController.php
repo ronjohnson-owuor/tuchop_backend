@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Media;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -9,6 +10,17 @@ use OpenAI;
 
 class openaiController extends Controller
 {
+    
+    public function responseData($message,$success,$data){
+
+        return response() -> json([
+            'message' =>$message,
+            'success'=> $success,
+            'data'=> $data
+        ]);
+      }
+        
+        
        /* response message data structure */
        public function responseMessage($message,$success,$token,$error){
         if($token){
@@ -133,8 +145,81 @@ class openaiController extends Controller
     }
         
     /* ask question relatd to the pdf */
-    public function  askPDF(){
+    public function  askPDF(Request $request){
+        $pdfurl = $request ->url;
+        $pdfId =  $request -> id;
+        $question = $request -> question;
         
+        /* check if the pdf has a source id */
+        $pdf = Media::find($pdfId);    
+           if($pdf == null){
+            return $this -> responseMessage("pdf not found",false,null,"pdf not found");
+           }
+           
+           $source_id = $pdf ->sourceId;
+            $apiKey = env("CHAT_PDF_API_KEY");
+            $client = new Client();
+           if($source_id == null){
+            /* get source id from chat PDF api and save it to the database */
+            $body =  json_encode([
+                "url" => $pdfurl
+            ]);
+            
+            try{
+                $response = $client-> request('POST', 'https://api.chatpdf.com/v1/sources/add-file', [
+                    'body' => $body,
+                    'headers' => [
+                    'accept' => 'application/json',
+                    'content-type' => 'application/json',
+                    'x-api-key' => $apiKey,
+                    ],
+                ]);
+                // get response data 
+                $responseData = json_decode($response->getBody(), true);
+                $source_id = $responseData["sourceId"];
+                $pdf -> sourceId = $source_id;
+                $pdf -> save();
+            } catch (Exception $exe){
+                return $this  -> responseMessage($exe->getMessage(),true,false,"source ID not assigned");  
+            }  
+            
+            
+           
+           }
+            /* PART 2 - ASK QUESTIONS FROM THE ALREADY UPLOADED PDF */
+            $body = json_encode([
+                "sourceId" => $source_id,
+                "messages" => [
+                [
+                "role" => "user",
+                "content" => $question
+                ]
+                ]
+            ]);
+           try{
+            $response = $client-> request('POST', 'https://api.chatpdf.com/v1/chats/message', [
+                'body' => $body,
+                'headers' => [
+                'accept' => 'application/json',
+                'content-type' => 'application/json',
+                'x-api-key' => $apiKey,
+                ],
+            ]);
+            // get response data 
+            $responseData = json_decode($response->getBody(), true);
+            $answer = $responseData["content"];
+            
+            $data = [
+                "message" =>"answer retrieved from pdf",
+                "question" => $question,
+                "answer" => $answer,
+                "follow_up_questions" => [] //no followup questions
+            ];
+            
+            return $this  ->responseMessage($data,true,true,null);
+        } catch (Exception $exe){
+            return $this  -> responseMessage("there was an error check your wifi or refresh",true,false,"source ID not assigned");  
+        }  
     }
     
     

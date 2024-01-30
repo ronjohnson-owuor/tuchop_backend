@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/save-topic", [topicController ::class, 'saveSubtopic']);
    Route::post("/v1/saved-topics", [topicController ::class, 'returnSavedTopics']);
    Route::post("/v1/get-topic-list", [topicController ::class, 'getTopicList']);
+   Route::post("/v1/ask-file", [openaiController ::class, 'askPDF']);
    Route::post("/v1/get-user", [userController ::class, 'getUser']);
    Route::post("/v1/delete-topic", [topicController::class,'deleteTopic']);
    Route::post("/v1/delete-chat", [topicController::class,'deleteChats']);

@@ -8,20 +8,19 @@ use App\Http\Controllers\userController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post("/v1/ask-image", [openaiController ::class, 'askImage']);
 Route::post("/v1/get-topic", [openaiController ::class, 'getTopic']);
 Route::post("/v1/normal-signin", [userController ::class, 'normalSignin']);
 Route::post("/v1/prompt-image", [openaiController ::class, 'promtImage']);
 Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
 Route::post("/v1/callback-status", [paymentController::class,'callBackFunction']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
-
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */
    Route::post("/v1/save-topic", [topicController ::class, 'saveSubtopic']);
    Route::post("/v1/saved-topics", [topicController ::class, 'returnSavedTopics']);
    Route::post("/v1/get-topic-list", [topicController ::class, 'getTopicList']);
    Route::post("/v1/ask-file", [openaiController ::class, 'askPDF']);
+   Route::post("/v1/ask-image", [openaiController ::class, 'askImage']);
    Route::post("/v1/get-user", [userController ::class, 'getUser']);
    Route::post("/v1/delete-topic", [topicController::class,'deleteTopic']);
    Route::post("/v1/delete-chat", [topicController::class,'deleteChats']);

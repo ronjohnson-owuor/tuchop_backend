@@ -6,6 +6,7 @@ use App\Models\Media;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use OpenAI;
 
 class openaiController extends Controller
@@ -101,49 +102,64 @@ class openaiController extends Controller
     }    
     
     
-    // ask questions relatd to an image a user has give
-    public function askImage(Request $request){
-        $apiKey = env("PERPLEXITY_AI_API_KEY");
-        $question = $request ->question;
-        $image_url = $request -> url;
-        $body = json_encode([
-            "model" => "mistral-7b-instruct",
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => "Be precise and concise. Give your answer in the format {question:question the user asked in string,image:url of the image from  which the question was asked string,answer:your answer in string,follow_up_questions:array of follow up question maximum 5}.  Give a valid JSON format for all your responses, nothing to come before or after the JSON format.For math questions make sure to show your workings for the question within the answer section.use the image link to answer questions from or that are in the image"
-                ],
-                [
-                    "role" => "user",
-                    "content" => $question
-                ],
-                [
-                    "role" => "user",
-                    "content" => $image_url
-                ]
-            ]
-        ]);
+    /* this function generates access token before each request to be used in authentication process */
+    public function getAccessToken (){
+        $url = "https://gateway.ezml.io/api/v1/auth";
+        $client_key = env("LLAVA_CLIENT_KEY");
+        $client_secret = env ("LLAVA_CLIENT_SECRET");
+        $payload = [
+            "client_key" =>$client_key,
+            "client_secret" => $client_secret
+        ];
         
         try {
-            $client = new Client();
-        $response = $client-> request('POST', 'https://api.perplexity.ai/chat/completions', [
-          'body' => $body,
-          'headers' => [
-            'accept' => 'application/json',
-            'content-type' => 'application/json',
-            'Authorization' => 'Bearer ' . $apiKey,
-          ],
-        ]);
-        $responseData = json_decode($response->getBody(), true);
-        // Extract message content
-        $messageContent = $responseData['choices'][0]['message']['content'];
-        $messageContent = json_decode($messageContent);
-        return $this -> responseMessage($messageContent,true,true,null);
-        } catch(Exception $e){
-            return $this ->responseMessage("there was an error wait then try again",false,false,$e->getMessage());
+            $response = Http::post($url, $payload);
+            $data = $response->json();
+            // Access token received from the response
+            $access_token = $data["access_token"];
+            return $access_token;
+        } catch (Exception $e) {
+            // Handle exceptions
+            return null;
         }
     }
+    
+    
+    // this function is responsible for returning answer to images given to it 
+    public function getAnswerFromimage($base64Image,$access_token,$question){
+        $url = "https://gateway.ezml.io/api/v1/functions/visual_question_answering";
+        $payload = [
+            "image" => $base64Image,
+            "prompt" => $question
+        ];
+        $headers = [
+            "Authorization" => "Bearer " .$access_token
+        ];
+        $response = Http::withHeaders($headers)->post($url, $payload);
+        $responseData = $response->json();
+        return $responseData["result"];
+    }
+
+    
+    
+    // ask questions related to an image a user has give => this is the main function and is supported by access token function and image function
+    public function askImage(Request $request){
+    $access_token = $this -> getAccessToken();
+    $image_url = $request -> url;
+    $question = $request ->question;
+    $imageData = file_get_contents($image_url);
+    $base64Image = base64_encode($imageData); // image 64 ready to be used for prompting
+    $answerData = $this -> getAnswerFromimage($base64Image,$access_token,$question);
+    
+    $data = [
+        "question" => $question,
+        "answer" => $answerData,
+        "follow_up_questions" => ["image  question suggestion not availlable"]
+    ];
+    return $data;
+    }
         
+    
     /* ask question relatd to the pdf */
     public function  askPDF(Request $request){
         $pdfurl = $request ->url;
@@ -188,6 +204,7 @@ class openaiController extends Controller
            }
             /* PART 2 - ASK QUESTIONS FROM THE ALREADY UPLOADED PDF */
             $body = json_encode([
+                "referenceSources" => true,   //show the page in which the source was found\\'/}+
                 "sourceId" => $source_id,
                 "messages" => [
                 [

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Media;
+use App\Subscriptionmanager\Submanager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -33,7 +34,9 @@ class uploadController extends Controller
     
     /* upload image */
     public function uploadImage(Request $request){
-        
+        $userId = Auth::user() ->id;
+        $submanager = new Submanager();
+        $requestRegulator = $submanager ->requestRegulator($userId);
         try{
             try{
                 $request ->validate([
@@ -52,6 +55,13 @@ class uploadController extends Controller
             $newFilename = time() .'tuchopai'.'.'.$image_to_be_uploaded->getClientOriginalExtension();
             $filePath = "tuchopai/images/".$newFilename;
             $storage_disk = Storage::disk('s3');
+            
+            // can the user upload image
+            if(!$requestRegulator ->imageQuestion){
+                return $this -> responseData('UPGRADE: upgrade to answer question from images',false,null);  
+            }
+            
+            
             try{
                 $storage_disk->put($filePath,file_get_contents($image_to_be_uploaded),'public');    
             }catch(Throwable $th){
@@ -99,14 +109,18 @@ class uploadController extends Controller
                 } catch(ValidationException $valExe){
                     return $this -> responseData('unable to upload maybe check your file type',false,$valExe ->errors());
                 }
-                
+                $submanager = new Submanager();
                 $user = $this -> Authuser();
                 $user_id = $user -> id;
+                $requestRegulator = $submanager ->requestRegulator($user_id);
                 /* when the validation is a success */
                 $file_to_be_uploaded = $request->file('file');
                 $newFilename = time() .'tuchopai'.'.'.$file_to_be_uploaded->getClientOriginalExtension();
                 $filePath = "tuchopai/files/".$newFilename;
                 $storage_disk = Storage::disk('s3');
+                if(!$requestRegulator ->fileQuestion){
+                    return $this -> responseData('UPGRADE: upgrade to answer question from files',false,null);  
+                }
                 try{
                     $storage_disk->put($filePath,file_get_contents($file_to_be_uploaded),'public');    
                 }catch(Throwable $th){

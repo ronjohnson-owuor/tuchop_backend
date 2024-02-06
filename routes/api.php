@@ -5,6 +5,7 @@ use App\Http\Controllers\paymentController;
 use App\Http\Controllers\topicController;
 use App\Http\Controllers\uploadController;
 use App\Http\Controllers\userController;
+use App\Subscriptionmanager\Submanager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,7 @@ Route::post("/v1/prompt-image", [openaiController ::class, 'promtImage']);
 Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
 Route::post("/v1/callback-status", [paymentController::class,'callBackFunction']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
+Route::post("/v1/can-create", [Submanager ::class, 'requestRegulator']);
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */
    Route::post("/v1/save-topic", [topicController ::class, 'saveSubtopic']);

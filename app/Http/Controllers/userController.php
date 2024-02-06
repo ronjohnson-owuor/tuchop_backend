@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Token;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,6 +75,12 @@ class userController extends Controller
                     "email_verified" =>true
                 ]);  
             }
+            // give the user free tier token of 500
+            Token::create([
+                "user_id"  => $user ->id,
+                "tokens" => 500, //give 500 free tokens at first signup
+                "expiry" => now() ->addMonth()
+            ]);
             /* generate token for user to store in the backend*/
             $token = $user -> createToken('user') ->plainTextToken;
             return $this->responseMessage('sign up success',true,$token,null);        

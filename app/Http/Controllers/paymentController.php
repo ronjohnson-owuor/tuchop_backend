@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipt;
+use App\Models\Token;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -31,9 +32,9 @@ class paymentController extends Controller
         $user = Auth::user();
         $plan_number = $request ->plan_number;
         $planArray = [
-            1 =>1838,
-            2 =>3510,
-            3 =>35282   
+            1 =>1605,
+            2 =>3048,
+            3 =>35309   
         ];
         
         if(!$plan_number){
@@ -67,6 +68,9 @@ class paymentController extends Controller
         }        
     }
     
+    
+    
+    
     public function cardCallback(){
         $paymentDetails = Paystack::getPaymentData();
         $reference = $paymentDetails['data']['reference'];  /* the payment details is an array not object so 
@@ -75,12 +79,10 @@ class paymentController extends Controller
         
         if ( $paymentStatus == 1) {
             $payment_receipt = Receipt::where('receipt',$reference) ->where('completed',false) -> first();
-            
             $user_id = $payment_receipt ->userid;
             $plan_number = $payment_receipt ->plan;
            
             $user = User::find($user_id);
-
             if ($user) {
                 $expiry_date = now();
                 if ($plan_number == 3) {
@@ -92,6 +94,11 @@ class paymentController extends Controller
                     'planType' => $plan_number,
                     'expiry_date' => $expiry_date,
                 ]);
+                $userToken = Token::where("user_id",$user_id)->first();
+                $userToken -> tokens = $plan_number == 1 ? 20000:1000000000; //just give unlimited token to the users above plantype 1;
+                $userToken -> expiry = $expiry_date;
+                //new expiry and new token given to user.
+                $userToken ->save();
             }
             $payment_receipt->update(['completed' => true]);
             echo "

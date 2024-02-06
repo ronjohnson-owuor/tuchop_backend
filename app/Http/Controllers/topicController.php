@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Subscriptionmanager\Submanager;
 use Carbon\Carbon;
 use App\Models\Topic;
 use App\Models\Promptdata;
@@ -55,6 +56,9 @@ class topicController extends Controller
         
         
     public function saveSubtopic(Request $request){
+        
+       $subscriptionManager = new Submanager();
+        
         try{
             $request -> validate([
               'topic_name' =>'required',
@@ -65,13 +69,21 @@ class topicController extends Controller
         }
         
         $user = $this ->Authuser();
-        $new_topic = Topic::create([
-            'topic_creator' => $user ->id,
-            'topic_name' => $request ->topic_name,
-            'topics_choosen' => json_encode($request->topics_choosen) //encode the array for storage as a string array
-        ]);
+        $canCreate = $subscriptionManager -> canCreateTopic($user->id);
+        $canCreateTopic = $canCreate ->cancreate;
+        $cancreateMessage = $canCreate -> message;
         
-      return $this -> responseMessage("topic saved start learning",true,true,false); 
+        if($canCreateTopic){
+            $new_topic = Topic::create([
+                'topic_creator' => $user ->id,
+                'topic_name' => $request ->topic_name,
+                'topics_choosen' => json_encode($request->topics_choosen) //encode the array for storage as a string array
+            ]);
+            
+          return $this -> responseMessage("topic saved start learning",true,true,false);   
+        }
+        return $this -> responseMessage($cancreateMessage,false,true,false);
+ 
     }
     
     
@@ -190,9 +202,19 @@ class topicController extends Controller
         }
         
         public function getAvideo(Request $request){
+            $userId = Auth::user() ->id;
             $phrase = $request ->phrase;
             $index = $request -> index;
+            $submanager = new Submanager();
+            $requestRegulator = $submanager ->requestRegulator($userId);
             try{
+                
+                if(!$requestRegulator ->fileQuestion){
+                    return $this ->responseMessage('UPGRADE: upgrade to starter plan to request video answers',false,false,"plan not applicable for video");
+                }
+                
+                
+                
                 $results = Youtube::searchVideos($phrase);
                 $videoIds =[];
                 foreach ($results as $result) {

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Media;
+use App\Subscriptionmanager\Submanager;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use OpenAI;
 
@@ -64,6 +66,11 @@ class openaiController extends Controller
 
     /* this are normal questions asked by the user that has no image or pdf in it just chatbot */
     public function normalChat(Request $request){
+        $user = Auth::user();
+        $userId = $user ->id;
+        $submanager = new Submanager();
+        $requestRegulator = $submanager ->requestRegulator($userId);            
+
         $apiKey = env("PERPLEXITY_AI_API_KEY");
         $question = $request ->message;
         $body = json_encode([
@@ -81,7 +88,12 @@ class openaiController extends Controller
         ]);
         
         try {
-            $client = new Client();
+            
+            if(!$requestRegulator ->valid){
+                // if the token are over and user need to renew the token
+                return $this ->responseMessage($requestRegulator ->message,false,false,null);   
+            }
+              $client = new Client();
         $response = $client-> request('POST', 'https://api.perplexity.ai/chat/completions', [
           'body' => $body,
           'headers' => [
@@ -94,7 +106,7 @@ class openaiController extends Controller
         // Extract message content
         $messageContent = $responseData['choices'][0]['message']['content'];
         $messageContent = json_decode($messageContent);
-        return $this -> responseMessage($messageContent,true,true,null);
+        return $this -> responseMessage($messageContent,true,true,null);  
         } catch(Exception $e){
             return $this ->responseMessage("there was an error wait then try again",false,false,$e);
         }
@@ -102,70 +114,106 @@ class openaiController extends Controller
     }    
     
     
-    /* this function generates access token before each request to be used in authentication process */
-    public function getAccessToken (){
-        $url = "https://gateway.ezml.io/api/v1/auth";
-        $client_key = env("LLAVA_CLIENT_KEY");
-        $client_secret = env ("LLAVA_CLIENT_SECRET");
-        $payload = [
-            "client_key" =>$client_key,
-            "client_secret" => $client_secret
-        ];
-        
+
+    
+    // extract text from image
+    public function extractTextfromImage($image_url){
         try {
-            $response = Http::post($url, $payload);
-            $data = $response->json();
-            // Access token received from the response
-            $access_token = $data["access_token"];
-            return $access_token;
-        } catch (Exception $e) {
-            // Handle exceptions
-            return null;
+            $response = Http::withHeaders([
+                'apikey' => env("APILAYER_KEY")
+            ])->get('https://api.apilayer.com/image_to_text/url?url=' . $image_url);
+            $text_json = json_decode($response,true);
+            $text = $text_json["all_text"];
+            // this is the text extracted from the image
+            return $text;
+        } catch (Exception $exception) {
+            return 500; //there was an error
+        }
+        
+    }
+    
+    
+    // ask image  question to get answer
+    public function getAnswerForTheImge($text_extract){
+        try{
+            $api_key = env("OPENAI_KEY");
+            $client = OpenAI::client($api_key);
+            $result = $client->chat()->create([
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    ['role' => 'system', 'content' =>'answer the questions in a detailled manner,all questions shold have the question and the answer and brobably the question should be bold nd numbered'],
+                    ['role' => 'user', 'content' =>$text_extract],
+                ]
+            ]);
+            $message = $result->choices[0]->message->content;
+            return $message;
+        } catch(\Throwable $th){
+            return 500;
         }
     }
     
-    
-    // this function is responsible for returning answer to images given to it 
-    public function getAnswerFromimage($base64Image,$access_token,$question){
-        $url = "https://gateway.ezml.io/api/v1/functions/visual_question_answering";
-        $payload = [
-            "image" => $base64Image,
-            "prompt" => $question
-        ];
-        $headers = [
-            "Authorization" => "Bearer " .$access_token
-        ];
-        $response = Http::withHeaders($headers)->post($url, $payload);
-        $responseData = $response->json();
-        return $responseData["result"];
-    }
-
-    
-    
-    // ask questions related to an image a user has give => this is the main function and is supported by access token function and image function
-    public function askImage(Request $request){
-    $access_token = $this -> getAccessToken();
-    $image_url = $request -> url;
-    $question = $request ->question;
-    $imageData = file_get_contents($image_url);
-    $base64Image = base64_encode($imageData); // image 64 ready to be used for prompting
-    $answerData = $this -> getAnswerFromimage($base64Image,$access_token,$question);
-    
-    $data = [
-        "question" => $question,
-        "answer" => $answerData,
-        "follow_up_questions" => ["image  question suggestion not availlable"]
-    ];
-    return $data;
-    }
+    public function askImage(Request $request) {
+        $image_url = $request->url;
+        $question = $request->question;
         
+        $user = Auth::user();
+        $userId = $user -> id;
+        $submanager = new Submanager();
+     $requestRegulator = $submanager ->requestRegulator($userId);
+     
+     if(!$requestRegulator ->valid){
+        // if the token are over and user need to renew the token
+        return $this ->responseMessage($requestRegulator ->message,false,false,null);   
+    }
     
+    
+    // can user ask question from image
+    if(!$requestRegulator -> imageQuestion){
+        return $this ->responseMessage("your plan does not suport image answering upgrade to unlimited plan.",false,false,null); 
+    }
+       $text = $this ->extractTextfromImage($image_url);
+        if($text == 500){
+            $error_data =[
+                "question" => $question,
+                "answer" => "there was an error or the image has no text.Our image model is still under development and might not be that good with working or recognising images fully but we are working on it.ON THE OTHER SIDE TRY CHECKING YOUR INTERNET CONNECTION ,YOU MAY BE DISCONNECTED",
+                "follow_up_questions" => ["try another image with text in it","wait  moment then try again"]
+            ];
+            return $this ->responseMessage($error_data,true,false,"no text found");
+        }else{
+            //ask the i now to return the answers to the question
+            $text = $question." after the semi collon : ".$text;
+            $text_answer = $this -> getAnswerForTheImge($text);
+            
+            if($text == 500){
+                $error_data =[
+                    "question" => $question,
+                    "answer" => "there was an error or the image has no text.Our image model is still under development and might not be that good with working or recognising images fully but we are working on it.ON THE OTHER SIDE TRY CHECKING YOUR INTERNET CONNECTION ,YOU MAY BE DISCONNECTED",
+                    "follow_up_questions" => ["error on our side,wait a moment we re on it","wait  moment then try again or refresh the page"]
+                ];
+                return $this ->responseMessage($error_data,true,false,"no text found");  
+            }
+            $data = [
+                "question" => $question,
+                "answer" => $text_answer,
+                "follow_up_questions" => ["image question suggestion not available"]
+            ];
+
+            return $this ->responseMessage($data,true,true,null);
+        }   
+    } 
+    
+    
+    
+        
     /* ask question relatd to the pdf */
     public function  askPDF(Request $request){
         $pdfurl = $request ->url;
         $pdfId =  $request -> id;
         $question = $request -> question;
-        
+        $user = Auth::user();
+        $userId = $user -> id;
+        $submanager = new Submanager();
+     $requestRegulator = $submanager ->requestRegulator($userId);
         /* check if the pdf has a source id */
         $pdf = Media::find($pdfId);    
            if($pdf == null){
@@ -174,6 +222,14 @@ class openaiController extends Controller
            
            $source_id = $pdf ->sourceId;
             $apiKey = env("CHAT_PDF_API_KEY");
+            if(!$requestRegulator ->valid){
+                // if the token are over and user need to renew the token
+                return $this ->responseMessage($requestRegulator ->message,false,false,null);   
+            }
+                // can user ask question from pdf
+            if(!$requestRegulator -> fileQuestion){
+                return $this ->responseMessage("your plan does not suport file  answering upgrade to starter plan.",false,false,null); 
+            }
             $client = new Client();
            if($source_id == null){
             /* get source id from chat PDF api and save it to the database */
@@ -198,9 +254,6 @@ class openaiController extends Controller
             } catch (Exception $exe){
                 return $this  -> responseMessage($exe->getMessage(),true,false,"source ID not assigned");  
             }  
-            
-            
-           
            }
             /* PART 2 - ASK QUESTIONS FROM THE ALREADY UPLOADED PDF */
             $body = json_encode([

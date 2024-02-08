@@ -1,6 +1,7 @@
 <?php
 namespace App\Subscriptionmanager;
 use App\Http\Controllers\Controller;
+use App\Models\Media;
 use App\Models\Token;
 use App\Models\Topic;
 use App\Models\User;
@@ -57,6 +58,7 @@ class Submanager extends Controller{
 		$hasExpired = Carbon::parse($expiry) ->isPast();
 		$imageQuestion = false;
 		$fileQuestion = false;
+		$canUpload = false;
 		if($hasExpired){
 			return (object)[
 				"valid" => false,
@@ -79,15 +81,25 @@ class Submanager extends Controller{
 		
 		if($planType == 1){
 			$fileQuestion = true;
+			// set upload limit
+			$totalMedia = Media::where("user_id	",$id) ->count();
+			if($totalMedia < 40){
+				$canUpload = true;
+			}
 		}else if($planType >= 2){
 			$imageQuestion = true;
 			$fileQuestion = true;
+			$canUpload =true;
 		}
+		
+		
+
 		
 		return (object)[
 			"valid" => true,
 			"imageQuestion" => $imageQuestion,
 			"fileQuestion" => $fileQuestion,
+			"canupload" => $canUpload,
 			"message" => "token not depleted"
 		];	
 	}

@@ -63,6 +63,27 @@ class openaiController extends Controller
 
     }
     
+    
+    
+    // get follow up
+    public function getFollowUps ($question){
+        $question = "give me the follow up questions  to help me anderstand this question deeply" . $question;
+        try{
+            $api_key = env("OPENAI_KEY");
+            $client = OpenAI::client($api_key);
+            $result = $client->chat()->create([
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    ['role' => 'system', 'content' =>'return a valid array of  follow up question related to the question given  in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.the follow up question should be minimum of 5 and the array should not be blank for any question'],
+                    ['role' => 'user', 'content' =>$question],
+                ]
+            ]);
+            $message = $result->choices[0]->message->content;
+            return json_decode($message);
+        } catch(\Throwable $th){
+            return [];
+        }
+    }
 
     /* this are normal questions asked by the user that has no image or pdf in it just chatbot */
     public function normalChat(Request $request){
@@ -78,7 +99,7 @@ class openaiController extends Controller
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => "Be precise and concise. Give your answer in the format {question:question the user asked,answer:your answer,follow_up_questions:array of follow up question maximum 5}. Give a valid JSON format for all your responses, nothing to come before or after the JSON format. If it's a math question, make sure you explain your steps."
+                    "content" => "Be precise and in depth with your answer.  If it's a math question, make sure you explain your steps and show things like formula used steps taken etc. make sure you italice the steps in math problem and start on a new line for every step.capitalize the key point in the answer"
                 ],
                 [
                     "role" => "user",
@@ -105,8 +126,13 @@ class openaiController extends Controller
         $responseData = json_decode($response->getBody(), true);
         // Extract message content
         $messageContent = $responseData['choices'][0]['message']['content'];
-        $messageContent = json_decode($messageContent);
-        return $this -> responseMessage($messageContent,true,true,null);  
+        $followups = $this ->getFollowUps($question);
+        $data = (object)[
+            "question" => $question,
+            "answer" => $messageContent,
+            "follow_up_questions" => $followups ? $followups : ['follow up questions will appear here if there is any 😎']
+        ];
+        return $this -> responseMessage($data,true,true,null);  
         } catch(Exception $e){
             return $this ->responseMessage("there was an error wait then try again",false,false,$e);
         }

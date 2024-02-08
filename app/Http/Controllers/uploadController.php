@@ -118,8 +118,8 @@ class uploadController extends Controller
                 $newFilename = time() .'tuchopai'.'.'.$file_to_be_uploaded->getClientOriginalExtension();
                 $filePath = "tuchopai/files/".$newFilename;
                 $storage_disk = Storage::disk('s3');
-                if(!$requestRegulator ->fileQuestion){
-                    return $this -> responseData('UPGRADE: upgrade to answer question from files',false,null);  
+                if(!$requestRegulator ->fileQuestion && !$requestRegulator ->canupload){
+                    return $this -> responseData('UPGRADE: upgrade,you have finished your upload limit',false,null);  
                 }
                 try{
                     $storage_disk->put($filePath,file_get_contents($file_to_be_uploaded),'public');    

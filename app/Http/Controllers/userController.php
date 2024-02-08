@@ -124,11 +124,15 @@ class userController extends Controller
     
     public function getUser(){
         $user = Auth::user();
+        $userTokenData = Token::where("user_id",$user -> id)->first();
+        $token = $userTokenData ->tokens;
         $data = (object)[
             'id' => $user ->id,
             'email' =>$user ->email,
             'name' =>$user ->name,
-            'picture' =>$user ->picture
+            'picture' =>$user ->picture,
+            'token_remaining' => $token,
+            'plan_type' => $user -> planType
         ];
         
         return  $this -> responseData(null,true,$data);

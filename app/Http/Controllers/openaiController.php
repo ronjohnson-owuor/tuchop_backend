@@ -159,6 +159,15 @@ class openaiController extends Controller
     }
     
     
+    //CREATE YOUR OWN OCR PACKAGE AND USE IT IN YOUR PROJECT
+    public function originalTextExtract(Request $request){
+       return "ocr will be here";
+    } 
+    
+    
+    
+    
+    
     // ask image  question to get answer
     public function getAnswerForTheImge($text_extract){
         try{

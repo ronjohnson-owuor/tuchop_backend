@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Plan;
 use App\Models\Receipt;
 use App\Models\Token;
 use App\Models\User;
@@ -31,16 +32,18 @@ class paymentController extends Controller
     public function cardPayment(Request $request){
         $user = Auth::user();
         $plan_number = $request ->plan_number;
-        $planArray = [
-            1 =>1605,
-            2 =>3048,
-            3 =>35309   
-        ];
+        $plans = Plan::all();
+        $planArray = [];
+        foreach ($plans as $plan) {
+            $shillings =$plan -> shillings;
+            $plan_type = $plan ->planType;
+            $planArray [$plan_type] = $shillings;  
+        }
         
         if(!$plan_number){
             return $this -> responseData('payment not successfull refresh and try again',false,null);
         }
-        $amount = ($planArray[$plan_number]) *100;
+        $amount = ($planArray[$plan_number])*100;
         $now = Carbon::now();
         $reference = $now->format('YmdHisv');
         $hashedReference = hash('sha256', $reference);
@@ -151,5 +154,19 @@ class paymentController extends Controller
         ";
         }
         
+    }
+    
+    
+    
+    // get plans
+    public function getPlans(){
+        $plans = Plan::all();
+        $data = [];
+        foreach ($plans as $plan) {
+            $dollars =$plan -> dollars;
+            $plan_type = $plan ->planType;
+            $data [$plan_type] = $dollars;  
+        }
+        return $this -> responseData("👋 upgrade...make your learning even more easier with tuchop AI",true,$data);
     }
 }

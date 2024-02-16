@@ -11,6 +11,7 @@ use Alaouy\Youtube\Facades\Youtube;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use PhpParser\Node\Expr\Cast\Object_;
+use Throwable;
 
 class topicController extends Controller
 {
@@ -263,6 +264,31 @@ class topicController extends Controller
     $question_location->save();
 
     return $this->responseData('Video saved', true, $videos);
+}
+
+
+
+// edit subtopic of a topic
+public function updateSubTopics(Request $request){
+    $user = Auth::user();
+    $user_id = $user -> id;
+    $topic_id = $request -> topic_id;
+    $new_array = $request -> new_topic;
+    $topic = Topic::find($topic_id);
+    // make sure the person editing topic is the owner
+    if (!$topic || $user_id != $topic ->topic_creator){
+        return $this ->responseData("topics not edited make sure you are the owner or the topic cannot be found at the moment",false,null);
+    }
+    
+    // find the topics
+    try{
+        
+    } catch (Throwable $th){
+        return $this ->responseData("topics not edited",false,null);
+    }
+    $topic ->topics_choosen = $new_array;
+    $topic ->save();
+    return $this ->responseData("topics successfully edited",true,null);
 }
 
     

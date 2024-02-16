@@ -16,6 +16,8 @@ Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */
+   
+   Route::post("/v1/update-topic", [topicController ::class, 'updateSubTopics']);
    Route::post("/v1/save-topic", [topicController ::class, 'saveSubtopic']);
    Route::post("/v1/saved-topics", [topicController ::class, 'returnSavedTopics']);
    Route::post("/v1/get-topic-list", [topicController ::class, 'getTopicList']);

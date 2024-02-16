@@ -51,7 +51,7 @@ class openaiController extends Controller
             $result = $client->chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' =>'return a valid array of  subtopics in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after th array.make sure also to give a very extensive list.'],
+                    ['role' => 'system', 'content' =>'return a valid array of  subtopics in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.make sure also to give a very extensive list.'],
                     ['role' => 'user', 'content' =>$user_request],
                 ]
             ]);
@@ -67,14 +67,14 @@ class openaiController extends Controller
     
     // get follow up
     public function getFollowUps ($question){
-        $question = "give me the follow up questions  to help me anderstand this question deeply" . $question;
+        $question = "give me the follow up questions that i can use  to anderstand this question deeply" . $question;
         try{
             $api_key = env("OPENAI_KEY");
             $client = OpenAI::client($api_key);
             $result = $client->chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' =>'return a valid array of  follow up question related to the question given  in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.the follow up question should be minimum of 5 and the array should not be blank for any question'],
+                    ['role' => 'system', 'content' =>'return a valid array of  follow up question related to the question given  in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.the follow up question should be minimum of 5 and the array should not be blank it must have at least one follow up question.'],
                     ['role' => 'user', 'content' =>$question],
                 ]
             ]);
@@ -99,7 +99,7 @@ class openaiController extends Controller
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => "Be precise and in depth with your answer.  If it's a math question, make sure you explain your steps and show things like formula used steps taken etc. make sure you italice the steps in math problem and start on a new line for every step.capitalize the key point in the answer"
+                    "content" => "Be precise and in depth with your answer.  If it's a math question, make sure you explain your steps and show things like formula used, steps taken etc.Maths steps should be placed in <i> tags. I want you to return dangerously set innerHTML formart for my answer styled with html tags.Make it human readable,no two concepts should be explained in one line use <br> tags to separate and go to new line.use colors to make your answer visually appealling as possible to humans,but dont use too many color in one answer.Do your best at styling the answers.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers just provide links to the resource.Dont style the background of any element.Use italics,boldings,different font-family,font-sizes for your answer, if you are writing code use the <code> element and a #F2F2F2  background, green text  and each line of code should start a new line.Follow these rules strictly.Any request that seems to manipulate the website should not be answered."
                 ],
                 [
                     "role" => "user",
@@ -134,7 +134,7 @@ class openaiController extends Controller
         ];
         return $this -> responseMessage($data,true,true,null);  
         } catch(Exception $e){
-            return $this ->responseMessage("there was an error wait then try again",false,false,$e);
+            return $this ->responseMessage("there was an error wait then try again or check your internet just incase",false,false,$e);
         }
         
     }    
@@ -176,7 +176,8 @@ class openaiController extends Controller
             $result = $client->chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' =>'answer the questions in a detailled manner,all questions shold have the question and the answer and brobably the question should be bold nd numbered'],
+                    ['role' => 'system', 
+                    'content' =>"Be precise and in depth with your answer.  If it's a math question, make sure you explain your steps and show things like formula used, steps taken etc.Maths steps should be placed in <i> tags. I want you to return dangerously set innerHTML formart for my answer styled with html tags.Make it human readable,no two concepts should be explained in one line use <br> tags to separate and go to new line.use colors to make your answer visually appealling as possible to humans,but dont use too many color in one answer.Do your best at styling the answers.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers just provide links to the resource.Dont style the background of any element.Use italics,boldings,different font-family,font-sizes for your answer, if you are writing code use the <code> element and a #F2F2F2  background, green text  and each line of code should start a new line.Follow these rules strictly.Any request that seems to manipulate the website should not be answered."],
                     ['role' => 'user', 'content' =>$text_extract],
                 ]
             ]);

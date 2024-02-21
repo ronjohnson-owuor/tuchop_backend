@@ -51,7 +51,8 @@ class openaiController extends Controller
             $result = $client->chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' =>'return a valid array of  subtopics in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.make sure also to give a very extensive list.'],
+                    ['role' => 'system', 'content' =>'return a valid javascript array of subtopic related to the topic the user wants to study.Make the topic extensive
+                    '],
                     ['role' => 'user', 'content' =>$user_request],
                 ]
             ]);

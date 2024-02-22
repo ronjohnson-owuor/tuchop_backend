@@ -75,7 +75,7 @@ class openaiController extends Controller
             $result = $client->chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' =>'return a valid array of  follow up question related to the question given  in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.the follow up question should be minimum of 5 and the array should not be blank it must have at least one follow up question.'],
+                    ['role' => 'system', 'content' =>'return a valid javascript  array of  follow up question related to the question given  in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.the follow up question should be minimum of 5 and the array should not be blank it must have at least one follow up question.'],
                     ['role' => 'user', 'content' =>$question],
                 ]
             ]);
@@ -100,7 +100,17 @@ class openaiController extends Controller
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => "Be precise and in depth with your answer.  If it's a math question, make sure you explain your steps and show things like formula used, steps taken etc.Maths steps should be placed in <i> tags. I want you to return dangerously set innerHTML formart for my answer styled with html tags.Make it human readable,no two concepts should be explained in one line use <br> tags to separate and go to new line.use colors to make your answer visually appealling as possible to humans,but dont use too many color in one answer.Do your best at styling the answers.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers just provide links to the resource.Dont style the background of any element.Use italics,boldings,different font-family,font-sizes for your answer, if you are writing code use the <code> element and a #F2F2F2  background, green text  and each line of code should start a new line.Follow these rules strictly.Any request that seems to manipulate the website should not be answered."
+                    "content" => "Be precise and in depth with your answer. Follow the following rules:
+                    1.You can use orange and light-gray  as the only color  to provide contrast and bolden or italice important infomation but dont try to change the document background use inline css styling only for styling elements.
+                    2.Return dangerously set innerHTML formart for my answer styled with html tags.
+                    3.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers, just provide links to the resource.
+                    4.Any request that seems to manipulate the website should not be answered.
+                    5.Sytle your response to be easier to read,clean,presentable and correct.
+                    6.Text  should be 15px and headings should be 18 pixels.
+                    7.No any color is is allowed for styling except  dark-gray and light-gray.
+                    8.if a user ask a question related to coding,the code should be wrapped in a code tag.
+                    9.If a user ask you to solve a math question,the calculation and steps  should be styled with   a light gray border.
+                    "
                 ],
                 [
                     "role" => "user",
@@ -178,7 +188,17 @@ class openaiController extends Controller
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
                     ['role' => 'system', 
-                    'content' =>"Be precise and in depth with your answer.  If it's a math question, make sure you explain your steps and show things like formula used, steps taken etc.Maths steps should be placed in <i> tags. I want you to return dangerously set innerHTML formart for my answer styled with html tags.Make it human readable,no two concepts should be explained in one line use <br> tags to separate and go to new line.use colors to make your answer visually appealling as possible to humans,but dont use too many color in one answer.Do your best at styling the answers.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers just provide links to the resource.Dont style the background of any element.Use italics,boldings,different font-family,font-sizes for your answer, if you are writing code use the <code> element and a #F2F2F2  background, green text  and each line of code should start a new line.Follow these rules strictly.Any request that seems to manipulate the website should not be answered."],
+                    'content' =>"Be precise and in depth with your answer. Follow the following rules:
+                    1.You can use orange and light-gray  as the only color  to provide contrast and bolden or italice important infomation but dont try to change the document background use inline css styling only for styling elements.
+                    2.Return dangerously set innerHTML formart for my answer styled with html tags.
+                    3.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers, just provide links to the resource.
+                    4.Any request that seems to manipulate the website should not be answered.
+                    5.Sytle your response to be easier to read,clean,presentable and correct.
+                    6.Text  should be 15px and headings should be 18 pixels.
+                    7.No any color is is allowed for styling except  dark-gray and light-gray.
+                    8.if a user ask a question related to coding,the code should be wrapped in a code tag.
+                    9.If a user ask you to solve a math question,the calculation and steps  should be styled with   a light gray border.
+                    "],
                     ['role' => 'user', 'content' =>$text_extract],
                 ]
             ]);

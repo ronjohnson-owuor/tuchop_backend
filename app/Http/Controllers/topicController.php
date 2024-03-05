@@ -207,27 +207,29 @@ class topicController extends Controller
             $phrase = $request ->phrase;
             $index = $request -> index;
             $submanager = new Submanager();
-            $requestRegulator = $submanager ->requestRegulator($userId);
+           $requestRegulator = $submanager ->requestRegulator($userId);
             try{
                 
                 if(!$requestRegulator ->fileQuestion){
                     return $this ->responseMessage('UPGRADE: upgrade to starter plan to request video answers',false,false,"plan not applicable for video");
                 }
                 
-                
-                
+
                 $results = Youtube::searchVideos($phrase);
                 $videoIds =[];
                 foreach ($results as $result) {
+                     $videoData = Youtube::getVideoInfo($result ->id ->videoId);   
                   $videoId  = (Object)[
                     'index' =>intval($index),
-                    'video_id' =>$result ->id ->videoId
+                    'video_id' =>$result ->id ->videoId,
+                    'thumbnail' => "https://img.youtube.com/vi/". $result ->id ->videoId . "/hqdefault.jpg",
+                    "title" => $videoData -> snippet -> title
                   ];
                   
                   $videoIds[] = $videoId;
                 }
                 return $this ->responseData('video retrieved',true,$videoIds);
-            } catch(\Throwable $th){
+            } catch(Throwable $th){
                 return $this ->responseMessage('error in getting videos',false,false,$th->getMessage());
             }
 

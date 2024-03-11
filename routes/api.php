@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\notesController;
 use App\Http\Controllers\openaiController;
 use App\Http\Controllers\paymentController;
 use App\Http\Controllers\topicController;
@@ -15,9 +16,11 @@ Route::post("/v1/extract-text", [openaiController ::class, 'originalTextExtract'
 Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
 Route::post("/v1/get-plan", [paymentController ::class, 'getPlans']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
+Route::post("/v1/get-notes", [notesController ::class, 'getNotes']);
+Route::post("/v1/get-topic-notes", [notesController ::class, 'getTopic']);
+
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */
-   
    Route::post("/v1/update-topic", [topicController ::class, 'updateSubTopics']);
    Route::post("/v1/save-topic", [topicController ::class, 'saveSubtopic']);
    Route::post("/v1/saved-topics", [topicController ::class, 'returnSavedTopics']);
@@ -29,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/delete-chat", [topicController::class,'deleteChats']);
    Route::post("/v1/save-prompt", [topicController::class,'savePrompt']);
    Route::post("/v1/saved-chat", [topicController::class,'savedChat']);
-   Route::post("/v1/get-video", [topicController::class,'getAvideo']);
+   Route::post("/v1/save-notes", [notesController ::class, 'saveNotes']);
    Route::post("/v1/save-video", [topicController::class,'saveVideo']);
    Route::post("/v1/upload-image", [uploadController::class,'uploadImage']);
    Route::post("/v1/upload-file", [uploadController::class,'uploadFile']);
@@ -41,3 +44,4 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/confirm-payment", [paymentController::class,'confirmReceipt']);
    Route::post("/v1/normal-chat", [openaiController ::class, 'normalChat']);
 });
+Route::post("/v1/get-video", [topicController::class,'getAvideo']);

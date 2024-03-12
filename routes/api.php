@@ -19,8 +19,13 @@ Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']
 Route::post("/v1/get-notes", [notesController ::class, 'getNotes']);
 Route::post("/v1/get-topic-notes", [notesController ::class, 'getTopic']);
 
+
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */
+   Route::post("/v1/save-edited-notes", [notesController ::class, 'saveEditedNotes']);
+   Route::post("/v1/get-saved-notes", [notesController ::class, 'getSavedNotes']);
+   Route::post("/v1/delete-notes", [notesController ::class, 'deleteNotes']);
+   Route::post("/v1/get-edit-notes", [notesController ::class, 'getEditNotes']);
    Route::post("/v1/update-topic", [topicController ::class, 'updateSubTopics']);
    Route::post("/v1/save-topic", [topicController ::class, 'saveSubtopic']);
    Route::post("/v1/saved-topics", [topicController ::class, 'returnSavedTopics']);

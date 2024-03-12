@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Note;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
@@ -77,12 +78,74 @@ class notesController extends Controller
             return $this -> responseData("notes saved ",true,null);
            } catch(Throwable $th){
             return $this -> responseData("an error occured try again",false,$th->getMessage());
-           }
+           }  
+        }
+        
+        public function getSavedNotes(){
+            
+            try{
+                $user_id = Auth::user() ->id;
+                $unfiltered_notes = Note::where('creator_id',$user_id) -> get();
+                $filtered_notes = [];
+                foreach($unfiltered_notes as $unfiltered_note){
+                    $create_at = Carbon::parse($unfiltered_note ->created_at) -> format("d/m/yy");
+                    $new_note = (Object)[
+                        "id" => $unfiltered_note -> id,
+                        "title" => $unfiltered_note -> title,
+                        "created_at" => $create_at
+                    ];
+                    $filtered_notes[] = $new_note;
+                }
+                
+                return $this -> responseData("notes retrieved",true,$filtered_notes);                
+            } catch(Throwable $th){
+                return $this -> responseData("unable to retrieve notes",false,null);
+            }
 
-            
-            
         }
         
         
+        public function getEditNotes(Request $request){
+            try{
+                $notes_id = $request -> id;
+                $notes = Note::find($notes_id);
+                $notes_body = $notes -> notes;
+                return $this -> responseData("notes retrieved",true,$notes_body);                
+            }catch(Throwable  $th){
+                $message = "<p>" . $th ->getMessage() . "</p>";
+                return $this -> responseData("unable to retrieve notes at the moment",false,$message);     
+            }
+
+         }
+         
+         
+        //  save edited notes
+        public function saveEditedNotes(Request $request){
+            try{
+                $notes_id = $request -> id;
+                $edited_notes = $request -> notes;
+                $notes = Note::find($notes_id);
+                $notes -> notes = $edited_notes;
+                $notes ->save();
+                return $this -> responseData("notes saved",true,null);
+            }catch(Throwable  $th){
+                $message = $th ->getMessage();
+                return $this -> responseData("not saved try again",false,$message);     
+            }
+
+        }
+        
+        
+        public function deleteNotes(Request $request){
+            try {
+                $id = $request -> id;
+                $note = Note::find($id);
+                $note -> delete();
+                return $this -> responseData("notes deleted",true,null);
+                
+            } catch (Throwable $th) {
+                return $this -> responseData($th ->getMessage(),true,null);
+            }
+        }
         
 }

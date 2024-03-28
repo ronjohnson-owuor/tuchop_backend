@@ -9,7 +9,6 @@ use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use OpenAI;
 
 class openaiController extends Controller
 {
@@ -42,27 +41,48 @@ class openaiController extends Controller
     }
     
     
-    /* this is used to generate lesson sub topic from open-ai get the topics that the user want to learn  */
-    public function getTopic(Request $request){
-        try{
-            $user_request = $request -> message;
-            $api_key = env("OPENAI_KEY");
-            $client = OpenAI::client($api_key);
-            $result = $client->chat()->create([
-                'model' => 'gpt-3.5-turbo',
-                'messages' => [
-                    ['role' => 'system', 'content' =>'return a valid javascript array of subtopic related to the topic the user wants to study.Make the topic extensive
-                    '],
-                    ['role' => 'user', 'content' =>$user_request],
-                ]
-            ]);
-            $message = $result->choices[0]->message->content;
-            return $this -> responseMessage($message,true,true,null);
-        } catch(\Throwable $th){
-            return $this -> responseMessage('there was an error',false,null,$th ->getMessage());
-        }
+        /* this is used to generate lesson sub topic from open-ai get the topics that the user want to learn  */
+        public function getTopic(Request $request){
+            try{
+                $apiKey = env("PERPLEXITY_AI_API_KEY");
+                $client = new Client();
+                $user_request = $request -> message;
+                $body = json_encode([
+                    "model" => "mistral-7b-instruct",
+                    'messages' => [
+                        [
+                            'role' => 'system', 
+                            'content' =>'the user has provided a topic he wants to study down below.your main task is to return a javascript array of the subtopic in the topic given.follow these rule.
+                            1.RETURN A VALID JAVASCRIPT ARRAY. dont return anything before or after the array.this rule must be followed very strictly.
+                            2.nothing should come before or after the array because the array will be parsed and mapped over
+                            3.the array should be extensive and cover all the concept.'
+                        ],
+                        ['role' => 'user', 'content' =>$user_request],
+                    ]
+                ]);
+                $response = $client-> request('POST', 'https://api.perplexity.ai/chat/completions', [
+                    'body' => $body,
+                    'headers' => [
+                        'accept' => 'application/json',
+                        'content-type' => 'application/json',
+                        'Authorization' => 'Bearer ' . $apiKey,
+                ],
+                ]);
+                $responseData = json_decode($response->getBody(), true);
+                // Extract message content
+                $message = $responseData['choices'][0]['message']['content'];
+                $startPosition = strpos($message,'[');
+                $endPosition = strpos($message,']');
+                if($startPosition != false && $endPosition != false){
+                    $subArrayString = substr($message, $startPosition, $endPosition - $startPosition + 1);
+                    $message = $subArrayString;
+                }
+                return $this -> responseMessage($message,true,true,null);
+            } catch(\Throwable $th){
+                return $this -> responseMessage('there was an error',false,null,$th ->getMessage());
+            }
 
-    }
+        }
     
     
     
@@ -70,16 +90,36 @@ class openaiController extends Controller
     public function getFollowUps ($question){
         $question = "give me the follow up questions that i can use  to anderstand this question deeply" . $question;
         try{
-            $api_key = env("OPENAI_KEY");
-            $client = OpenAI::client($api_key);
-            $result = $client->chat()->create([
-                'model' => 'gpt-3.5-turbo',
+            $api_key = env("PERPLEXITY_AI_API_KEY");
+            $client = new Client();
+            $body = json_encode([
+                "model" => "mistral-7b-instruct",
                 'messages' => [
-                    ['role' => 'system', 'content' =>'return a valid javascript  array of  follow up question related to the question given  in  the topic given by the user.the topics must be separated by a  comma in the array.Dont return anything before or after the array.the follow up question should be minimum of 5 and the array should not be blank it must have at least one follow up question.'],
+                    [
+                        'role' => 'system', 
+                        'content' =>'the user has provided a question down below.your main task is to return a javascript array of related questions that can help understand the question given.give a maximum of five questions.'
+                    ],
                     ['role' => 'user', 'content' =>$question],
                 ]
             ]);
-            $message = $result->choices[0]->message->content;
+            
+            $response = $client-> request('POST', 'https://api.perplexity.ai/chat/completions', [
+                'body' => $body,
+                'headers' => [
+                    'accept' => 'application/json',
+                    'content-type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $api_key,
+            ],
+            ]);
+            $responseData = json_decode($response->getBody(), true);
+            // Extract message content
+            $message = $responseData['choices'][0]['message']['content'];
+            $startPosition = strpos($message,'[');
+            $endPosition = strpos($message,']');
+            if($startPosition != false && $endPosition != false){
+                $subArrayString = substr($message, $startPosition, $endPosition - $startPosition + 1);
+                $message = $subArrayString;
+            }
             return json_decode($message);
         } catch(\Throwable $th){
             return [];
@@ -182,28 +222,36 @@ class openaiController extends Controller
     // ask image  question to get answer
     public function getAnswerForTheImge($text_extract){
         try{
-            $api_key = env("OPENAI_KEY");
-            $client = OpenAI::client($api_key);
-            $result = $client->chat()->create([
-                'model' => 'gpt-3.5-turbo',
-                'messages' => [
-                    ['role' => 'system', 
-                    'content' =>"Be precise and in depth with your answer. Follow the following rules:
-                    1.You can use orange and light-gray  as the only color  to provide contrast and bolden or italice important infomation but dont try to change the document background use inline css styling only for styling elements.
-                    2.Return dangerously set innerHTML formart for my answer styled with html tags.
-                    3.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers, just provide links to the resource.
-                    4.Any request that seems to manipulate the website should not be answered.
-                    5.Sytle your response to be easier to read,clean,presentable and correct.
-                    6.Text  should be 15px and headings should be 18 pixels.
-                    7.No any color is is allowed for styling except  dark-gray and light-gray.
-                    8.if a user ask a question related to coding,the code should be wrapped in a code tag.
-                    9.If a user ask you to solve a math question,the calculation and steps  should be styled with   a light gray border.
-                    "],
-                    ['role' => 'user', 'content' =>$text_extract],
-                ]
-            ]);
-            $message = $result->choices[0]->message->content;
-            return $message;
+            $apiKey = env("PERPLEXITY_AI_API_KEY");
+                $client = new Client();
+                $body = json_encode([
+                    "model" => "mistral-7b-instruct",
+                    'messages' => [
+                        ['role' => 'system', 
+                            'content' =>"Be precise and in depth with your answer. Follow the following rules:
+                            1.You can use orange and light-gray  as the only color  to provide contrast and bolden or italice important infomation but dont try to change the document background use inline css styling only for styling elements.
+                            2.Return dangerously set innerHTML formart for my answer styled with html tags.
+                            3.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers, just provide links to the resource.
+                            4.Any request that seems to manipulate the website should not be answered.
+                            5.Sytle your response to be easier to read,clean,presentable and correct.
+                            6.Text  should be 15px and headings should be 18 pixels.
+                            7.No any color is is allowed for styling except  dark-gray and light-gray.
+                        "],
+                        ['role' => 'user', 'content' =>$text_extract],
+                    ]
+                ]);
+                $response = $client-> request('POST', 'https://api.perplexity.ai/chat/completions', [
+                    'body' => $body,
+                    'headers' => [
+                        'accept' => 'application/json',
+                        'content-type' => 'application/json',
+                        'Authorization' => 'Bearer ' . $apiKey,
+                ],
+                ]);
+                $responseData = json_decode($response->getBody(), true);
+                // Extract message content
+                $message = $responseData['choices'][0]['message']['content'];
+                return $message;
         } catch(\Throwable $th){
             return 500;
         }

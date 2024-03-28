@@ -48,5 +48,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/card-payment", [paymentController::class,'cardPayment']);
    Route::post("/v1/confirm-payment", [paymentController::class,'confirmReceipt']);
    Route::post("/v1/normal-chat", [openaiController ::class, 'normalChat']);
+   Route::post("/v1/get-video", [topicController::class,'getAvideo']);
 });
-Route::post("/v1/get-video", [topicController::class,'getAvideo']);
+

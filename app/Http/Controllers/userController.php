@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Refferall;
 use App\Models\Token;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,7 +53,7 @@ class userController extends Controller
                 'type' =>'required|integer'
             ]);
             
-            
+            $refferallId = $request -> refferall;
             $name = $request['name'];
             $email =$request["email"];
             $type = $request["type"];
@@ -83,9 +84,29 @@ class userController extends Controller
             ]);
             /* generate token for user to store in the backend*/
             $token = $user -> createToken('user') ->plainTextToken;
+            if($refferallId != null){
+            $refferSection = Refferall::where('refferer',$refferallId) -> first();
+            if($refferSection == null){
+                Refferall::create([
+                    'refferer' => $refferallId,
+                    'reffered' => 1,
+                    'award' => 20
+                ]);
+            }  
+            $refferSection -> reffered +=1;
+            $refferSection -> award +=20;
+            $refferSection->save();
+           $refferSection -> reffered +=1;
+           $user_tokens = Token::where('user_id',$refferallId) -> first();
+           if($user_tokens != null){
+            $user_tokens->tokens += 20;
+            $user_tokens ->save();
+           }
+        }         
+            
             return $this->responseMessage('sign up success',true,$token,null);        
         } catch (ValidationException $valExe) {
-            return $this ->responseMessage('input fields error',false,null,$valExe->getMessage()); 
+            return $this ->responseMessage($valExe ->getMessage(),false,null,$valExe->getMessage()); 
         }
     }
     

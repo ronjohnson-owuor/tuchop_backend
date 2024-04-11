@@ -8,9 +8,9 @@ use App\Models\Topic;
 use App\Models\Promptdata;
 use Illuminate\Http\Request;
 use Alaouy\Youtube\Facades\Youtube;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use PhpParser\Node\Expr\Cast\Object_;
 use Throwable;
 
 class topicController extends Controller
@@ -91,7 +91,19 @@ class topicController extends Controller
     
     public function returnSavedTopics(){
         $user = $this ->Authuser();
+        $planType = User::where("id",$user -> id) ->first()->planType;
         $saved_topics = Topic::where('topic_creator',$user ->id) ->orderBy('id','DESC') -> get();
+        $topics_remaining = "infinite ♾";
+        
+        if($planType == 0){
+            $topics_remaining = 20 - ($saved_topics -> count());
+        }elseif($planType == 1){
+            $topics_remaining = 50 - ($saved_topics -> count());  
+        }
+        
+        
+        
+        
         $formatted_topics = [];
         foreach($saved_topics as  $saved_topic){
            $date_created = Carbon::parse($saved_topic ->created_at) ->format('d-m-Y');
@@ -103,12 +115,17 @@ class topicController extends Controller
             'topic_id' =>$topic_id,
             'topic_name' => $topic_name,
             'topics_choosen' => $topics_choosen,
-            'date_created' => $date_created
+            'date_created' => $date_created,
            ];
            $formatted_topics[] = $new_response;
            
         }
-        return $this ->responseData(null,true,$formatted_topics);
+        return response() -> json([
+            'message' =>null,
+            'success'=> true,
+            'data'=> $formatted_topics,
+            'topics_remaining' =>$topics_remaining
+        ]);
     }
     
     

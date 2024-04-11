@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\notesController;
 use App\Http\Controllers\openaiController;
 use App\Http\Controllers\paymentController;
@@ -49,5 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/confirm-payment", [paymentController::class,'confirmReceipt']);
    Route::post("/v1/normal-chat", [openaiController ::class, 'normalChat']);
    Route::post("/v1/get-video", [topicController::class,'getAvideo']);
+   Route::post("/v1/dashboard-general", [dashboardController::class,'general']);
+   Route::post("/v1/dashboard-overview", [dashboardController::class,'accountOverview']);
+   
 });
 

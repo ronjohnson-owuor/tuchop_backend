@@ -8,7 +8,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class userController extends Controller
 {
@@ -157,6 +159,39 @@ class userController extends Controller
         ];
         
         return  $this -> responseData(null,true,$data);
+    }
+    
+    
+    
+    // edit user information
+    public function EditUser(Request $request){
+        try{
+            $user = Auth::user();
+            $image = $request ->file('image');
+            $name = $request -> name;
+            
+            if($image != null){
+                $newFilename = time() .'tuchopai-profiles'.'.'.$image->getClientOriginalExtension();
+                $filePath = "tuchopai/profiles/".$newFilename;
+                $storage_disk = Storage::disk('s3');
+                try{
+                    $storage_disk->put($filePath,file_get_contents($image),'public');    
+                }catch(Throwable $th){
+                    return $this ->responseData('check your internet',false,$th->getMessage());
+                }
+                $path = $storage_disk ->url($filePath);
+                $user ->picture = $path;
+            }
+            
+            if($name != null){
+                $user -> name = $name;
+            }
+            $user -> save();
+            return $this->responseData('User updated successfully', true, null);            
+        }catch(Throwable $th){
+            return $this ->responseData('error in updating the user data',false,$th->getMessage());
+        }
+
     }
     
     

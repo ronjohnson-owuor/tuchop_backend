@@ -89,10 +89,17 @@ class topicController extends Controller
     
     
     
-    public function returnSavedTopics(){
+    public function returnSavedTopics(Request $request){
+        $lastIndex = $request -> lastIndex;
         $user = $this ->Authuser();
         $planType = User::where("id",$user -> id) ->first()->planType;
-        $saved_topics = Topic::where('topic_creator',$user ->id) ->orderBy('id','DESC') -> get();
+        
+        if($lastIndex != null){
+            $saved_topics = Topic::take($lastIndex) -> where('topic_creator',$user ->id) ->orderBy('id','DESC') -> get();   
+        }else{
+            $saved_topics = Topic::where('topic_creator',$user ->id) ->orderBy('id','DESC') -> get();  
+        }
+        
         $topics_remaining = "infinite ♾";
         
         if($planType == 0){

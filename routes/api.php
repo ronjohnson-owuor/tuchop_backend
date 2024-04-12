@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\dashboardController;
+use App\Http\Controllers\mavfitController;
 use App\Http\Controllers\notesController;
 use App\Http\Controllers\openaiController;
 use App\Http\Controllers\paymentController;
@@ -19,6 +20,7 @@ Route::post("/v1/get-plan", [paymentController ::class, 'getPlans']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
 Route::post("/v1/get-notes", [notesController ::class, 'getNotes']);
 Route::post("/v1/get-topic-notes", [notesController ::class, 'getTopic']);
+Route::post("/v1/mavfit-form", [mavfitController ::class, 'submitData']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -52,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/get-video", [topicController::class,'getAvideo']);
    Route::post("/v1/dashboard-general", [dashboardController::class,'general']);
    Route::post("/v1/dashboard-overview", [dashboardController::class,'accountOverview']);
+   Route::post("/v1/edit-user", [userController ::class, 'EditUser']);
    
 });
 

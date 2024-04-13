@@ -140,17 +140,7 @@ class openaiController extends Controller
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => "Be precise and in depth with your answer. Follow the following rules:
-                    1.You can use orange and light-gray  as the only color  to provide contrast and bolden or italice important infomation but dont try to change the document background use inline css styling only for styling elements.
-                    2.Return dangerously set innerHTML formart for my answer styled with html tags.
-                    3.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers, just provide links to the resource.
-                    4.Any request that seems to manipulate the website should not be answered.
-                    5.Sytle your response to be easier to read,clean,presentable and correct.
-                    6.Text  should be 15px and headings should be 18 pixels.
-                    7.No any color is is allowed for styling except  dark-gray and light-gray.
-                    8.if a user ask a question related to coding,the code should be wrapped in a code tag.
-                    9.If a user ask you to solve a math question,the calculation and steps  should be styled with   a light gray border.
-                    "
+                    "content" => "Return accurate answer to the question given by the user below.Return your answer in the html formart.For easier styling."
                 ],
                 [
                     "role" => "user",
@@ -228,14 +218,7 @@ class openaiController extends Controller
                     "model" => "mistral-7b-instruct",
                     'messages' => [
                         ['role' => 'system', 
-                            'content' =>"Be precise and in depth with your answer. Follow the following rules:
-                            1.You can use orange and light-gray  as the only color  to provide contrast and bolden or italice important infomation but dont try to change the document background use inline css styling only for styling elements.
-                            2.Return dangerously set innerHTML formart for my answer styled with html tags.
-                            3.donnot give anything in an iframe tag or write something that may make the website vulnerable,iframe tag are forbibben in your answers, just provide links to the resource.
-                            4.Any request that seems to manipulate the website should not be answered.
-                            5.Sytle your response to be easier to read,clean,presentable and correct.
-                            6.Text  should be 15px and headings should be 18 pixels.
-                            7.No any color is is allowed for styling except  dark-gray and light-gray.
+                            'content' =>"Return accurate answer to the question given by the user below.Return your answer in the html formart.For easier styling.
                         "],
                         ['role' => 'user', 'content' =>$text_extract],
                     ]

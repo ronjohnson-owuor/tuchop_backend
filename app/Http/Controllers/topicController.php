@@ -230,14 +230,7 @@ class topicController extends Controller
             $userId = Auth::user() ->id;
             $phrase = $request ->phrase;
             $index = $request -> index;
-           $submanager = new Submanager();
-         $requestRegulator = $submanager ->requestRegulator($userId);
-            try{
-                if(!$requestRegulator ->fileQuestion){
-                    return $this ->responseMessage('UPGRADE: upgrade to starter plan to request video answers',false,false,"plan not applicable for video");
-                }
-                
-
+            try{              
                 $results = Youtube::searchVideos($phrase);
                 $videoIds =[];
                 foreach ($results as $result) {

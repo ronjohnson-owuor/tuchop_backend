@@ -140,7 +140,7 @@ class userController extends Controller
             }
             return $this->responseMessage('login success',true,$token,null);           
         } catch (ValidationException $valExe) {
-            return $this->responseMessage('input field errors',false,null,$valExe->getMessage());
+            return $this->responseMessage($valExe->getMessage(),false,null,$valExe->getMessage());
         }
     }
     

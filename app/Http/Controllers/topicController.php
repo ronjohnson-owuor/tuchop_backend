@@ -80,8 +80,17 @@ class topicController extends Controller
                 'topic_name' => $request ->topic_name,
                 'topics_choosen' => json_encode($request->topics_choosen) //encode the array for storage as a string array
             ]);
+            $topicId = Topic::where('topic_creator',$user ->id)
+             -> where('topic_name',$request ->topic_name)
+             ->pluck('id')
+             ->first();
+             
+            $topicDetails = [
+                'name' => $request ->topic_name,
+                'id' => $topicId
+            ];
             
-          return $this -> responseMessage("topic saved start learning",true,true,false);   
+          return $this -> responseMessage("topic saved start learning",true,$topicDetails,false);   
         }
         return $this -> responseMessage($cancreateMessage,false,true,false);
  
@@ -173,27 +182,31 @@ class topicController extends Controller
         }catch(ValidationException $exe){
            return $this -> responseData('error saving data',false,$exe->getMessage()); 
         }
-        
-        $user = auth() ->user();
-        $module_owner_id = $user ->id;
-        
-        
-        /* save data to the database */
-        $module_id = $request ->module_id;
-        $submodule_id = $request ->submodule_id;
-        $question = $request ->question;
-        $answer = $request ->answer;
-        $follow_up_question = $request ->follow_up_questions;
-        $data = Promptdata::create([
-            'module_id' =>$module_id,
-            'module_owner_id' =>$module_owner_id,
-            'submodule_id' =>$submodule_id,
-            'question' => $question,
-            'answer' =>$answer,
-            'follow_up_question' =>$follow_up_question,
-            'videos' => '[]'
-        ]);
-        return $this ->responseData('data saved',true,$data);
+        try{
+            $user = auth() ->user();
+            $module_owner_id = $user ->id;
+            
+            
+            /* save data to the database */
+            $module_id = $request ->module_id;
+            $submodule_id = $request ->submodule_id;
+            $question = $request ->question;
+            $answer = $request ->answer;
+            $follow_up_question = $request ->follow_up_questions;
+            $data = Promptdata::create([
+                'module_id' =>$module_id,
+                'module_owner_id' =>$module_owner_id,
+                'submodule_id' =>$submodule_id,
+                'question' => $question,
+                'answer' =>$answer,
+                'follow_up_question' =>$follow_up_question,
+                'videos' => '[]'
+            ]);
+            return $this ->responseData('data saved',true,$data);            
+        } catch(Throwable $th){
+            return $this ->responseData('there is an error   : '.$th->getMessage(),true,$data);  
+        }
+
     }
     
     

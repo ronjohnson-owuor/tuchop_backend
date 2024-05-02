@@ -102,7 +102,7 @@ class uploadController extends Controller
             try{
                 try{
                     $request ->validate([
-                        'file' => 'required|mimes:pdf,docx,doc,txt|file',
+                        'file' => 'required|mimes:pdf',
                         'topic_id' =>'required',
                         'subtopic_id' => 'required',
                     ]);

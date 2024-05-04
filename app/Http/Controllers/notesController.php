@@ -77,7 +77,7 @@ class notesController extends Controller
             ]);
             return $this -> responseData("notes saved ",true,null);
            } catch(Throwable $th){
-            return $this -> responseData("an error occured try again",false,$th->getMessage());
+            return $this -> responseData("unable to save notes at the momoent try again  later",false,$th->getMessage());
            }  
         }
         

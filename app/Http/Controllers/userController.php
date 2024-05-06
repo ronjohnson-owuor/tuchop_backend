@@ -67,6 +67,7 @@ class userController extends Controller
                 "name"=>$name,
                 "password" =>$password,
                 "email" =>$email,
+                "planType" =>10, // free plan
                 "email_verified" =>false
             ]);              
             }else{
@@ -75,6 +76,7 @@ class userController extends Controller
                     "name"=>$name,
                     "picture" =>$picture,
                     "email" =>$email,
+                    "planType" =>10, // free plan in shillings
                     "email_verified" =>true
                 ]);  
             }
@@ -92,16 +94,16 @@ class userController extends Controller
                 Refferall::create([
                     'refferer' => $refferallId,
                     'reffered' => 1,
-                    'award' => 20
+                    'award' => 2
                 ]);
             }  
             $refferSection -> reffered +=1;
-            $refferSection -> award +=20;
+            $refferSection -> award +=2;
             $refferSection->save();
            $refferSection -> reffered +=1;
-           $user_tokens = Token::where('user_id',$refferallId) -> first();
+           $user_tokens = User::where('id',$refferallId) -> first();
            if($user_tokens != null){
-            $user_tokens->tokens += 20;
+            $user_tokens->planType += 2; //add the refferer 2 shillings
             $user_tokens ->save();
            }
         }         

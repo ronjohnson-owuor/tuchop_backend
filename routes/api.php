@@ -18,6 +18,7 @@ Route::post("/v1/extract-text", [openaiController ::class, 'originalTextExtract'
 Route::post("/v1/normal-login", [userController ::class, 'normalLogin']);
 Route::post("/v1/get-plan", [paymentController ::class, 'getPlans']);
 Route::get("/v1/cardpayment-callback", [paymentController::class,'cardCallback']);
+Route::get("/v1/express-callback", [paymentController::class,'expressCallback']);
 Route::post("/v1/get-notes", [notesController ::class, 'getNotes']);
 Route::post("/v1/get-topic-notes", [notesController ::class, 'getTopic']);
 Route::post("/v1/mavfit-form", [mavfitController ::class, 'submitData']);
@@ -49,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/rename-media", [uploadController::class,'renameMedia']);
    Route::post("/v1/delete-media", [uploadController::class,'deleteMedia']);
    Route::post("/v1/card-payment", [paymentController::class,'cardPayment']);
+   Route::post("/v1/express-payment", [paymentController::class,'initializePayment']);
    Route::post("/v1/confirm-payment", [paymentController::class,'confirmReceipt']);
    Route::post("/v1/normal-chat", [openaiController ::class, 'normalChat']);
    Route::post("/v1/get-video", [topicController::class,'getAvideo']);

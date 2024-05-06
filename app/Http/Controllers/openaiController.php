@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Media;
-use App\Subscriptionmanager\Submanager;
+use App\Subscriptionmanager\Express;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -130,8 +130,7 @@ class openaiController extends Controller
     public function normalChat(Request $request){
         $user = Auth::user();
         $userId = $user ->id;
-        $submanager = new Submanager();
-        $requestRegulator = $submanager ->requestRegulator($userId);            
+        $requestFilter = new Express();        
 
         $apiKey = env("PERPLEXITY_AI_API_KEY");
         $question = $request ->message;
@@ -151,9 +150,9 @@ class openaiController extends Controller
         
         try {
             
-            if(!$requestRegulator ->valid){
+            if(!$requestFilter ->filterRequest($userId)){
                 // if the token are over and user need to renew the token
-                return $this ->responseMessage($requestRegulator ->message,false,false,null);   
+                return $this ->responseMessage("Your wallet does not allow the request top up",false,false,null);   
             }
               $client = new Client();
         $response = $client-> request('POST', 'https://api.perplexity.ai/chat/completions', [
@@ -246,18 +245,12 @@ class openaiController extends Controller
         
         $user = Auth::user();
         $userId = $user -> id;
-        $submanager = new Submanager();
-     $requestRegulator = $submanager ->requestRegulator($userId);
+        
+        $requestFilter = new Express();
      
-     if(!$requestRegulator ->valid){
-        // if the token are over and user need to renew the token
-        return $this ->responseMessage($requestRegulator ->message,false,false,null);   
-    }
-    
-    
-    // can user ask question from image
-    if(!$requestRegulator -> imageQuestion){
-        return $this ->responseMessage("your plan does not suport image answering upgrade to unlimited plan.",false,false,null); 
+     if(!$requestFilter ->filterRequest($userId)){
+        // if user money is over
+        return $this ->responseMessage("your wallet is empty",false,false,null);   
     }
        $text = $this ->extractTextfromImage($image_url);
         if($text == 500){
@@ -300,8 +293,8 @@ class openaiController extends Controller
         $question = $request -> question;
         $user = Auth::user();
         $userId = $user -> id;
-        $submanager = new Submanager();
-     $requestRegulator = $submanager ->requestRegulator($userId);
+        $requestFilter = new Express();
+     
         /* check if the pdf has a source id */
         $pdf = Media::find($pdfId);    
            if($pdf == null){
@@ -310,13 +303,9 @@ class openaiController extends Controller
            
            $source_id = $pdf ->sourceId;
             $apiKey = env("CHAT_PDF_API_KEY");
-            if(!$requestRegulator ->valid){
+            if(!$requestFilter ->filterRequest($userId)){
                 // if the token are over and user need to renew the token
-                return $this ->responseMessage($requestRegulator ->message,false,false,null);   
-            }
-                // can user ask question from pdf
-            if(!$requestRegulator -> fileQuestion){
-                return $this ->responseMessage("your plan does not suport file  answering upgrade to starter plan.",false,false,null); 
+                return $this ->responseMessage("check your wallet and top up",false,false,null);   
             }
             $client = new Client();
            if($source_id == null){

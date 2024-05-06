@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Mavfit;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class mavfitController extends Controller
 {

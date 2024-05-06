@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Subscriptionmanager\Submanager;
 use Carbon\Carbon;
 use App\Models\Topic;
 use App\Models\Promptdata;
 use Illuminate\Http\Request;
 use Alaouy\Youtube\Facades\Youtube;
 use App\Models\User;
+use App\Subscriptionmanager\Express;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -58,7 +57,7 @@ class topicController extends Controller
         
     public function saveSubtopic(Request $request){
         
-       $subscriptionManager = new Submanager();
+        $requestFilter = new Express();
         
         try{
             $request -> validate([
@@ -70,11 +69,8 @@ class topicController extends Controller
         }
         
         $user = $this ->Authuser();
-        $canCreate = $subscriptionManager -> canCreateTopic($user->id);
-        $canCreateTopic = $canCreate ->cancreate;
-        $cancreateMessage = $canCreate -> message;
-        
-        if($canCreateTopic){
+        $canCreate = $requestFilter ->filterRequest($user ->id);       
+        if($canCreate){
             $new_topic = Topic::create([
                 'topic_creator' => $user ->id,
                 'topic_name' => $request ->topic_name,
@@ -92,7 +88,7 @@ class topicController extends Controller
             
           return $this -> responseMessage("topic saved start learning",true,$topicDetails,false);   
         }
-        return $this -> responseMessage($cancreateMessage,false,true,false);
+        return $this -> responseMessage("top up your wallet",false,true,false);
  
     }
     

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->boolean('email_verified');
             $table->string('password')->nullable();
             $table->string('picture') ->nullable();
-            $table->integer('planType') ->default(0); /* one is for free plan 1is for basic 2 is for pro and 3 is for anually */
+            $table->double('planType') ->default(10.00); /* one is for free plan 1is for basic 2 is for pro and 3 is for anually */
             $table -> date("expiry_date") -> nullable(); /* date of which the plan is expiring */
             $table->rememberToken();
             $table->timestamps();

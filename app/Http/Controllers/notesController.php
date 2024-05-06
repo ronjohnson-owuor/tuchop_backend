@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Note;
-use Carbon\Carbon;
-use GuzzleHttp\Client;
-use GuzzleHttp\Promise\Create;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Throwable;
+use Carbon\Carbon;
+use App\Models\Note;
+use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use GuzzleHttp\Promise\Create;
+use App\Subscriptionmanager\Express;
+use Illuminate\Support\Facades\Auth;
 
 class notesController extends Controller
 {
@@ -69,13 +70,18 @@ class notesController extends Controller
             $title = $request -> title;
             $notes = $request -> notes;
            $user_id = Auth::user() -> id;
-         
+           $requestFilter = new Express();
+           if($requestFilter ->filterRequest($user_id)){
                 Note::create([
-                "creator_id" => $user_id,
-                "title" => $title,
-                "notes" => $notes
-            ]);
-            return $this -> responseData("notes saved ",true,null);
+                    "creator_id" => $user_id,
+                    "title" => $title,
+                    "notes" => $notes
+                ]);
+                return $this -> responseData("notes saved ",true,null);
+           }else{
+            return $this -> responseData("top up your wallet",false,null);
+           }
+            
            } catch(Throwable $th){
             return $this -> responseData("unable to save notes at the momoent try again  later",false,$th->getMessage());
            }  

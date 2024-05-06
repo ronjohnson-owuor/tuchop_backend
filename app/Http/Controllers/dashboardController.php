@@ -8,9 +8,7 @@ use App\Models\Promptdata;
 use App\Models\Refferall;
 use App\Models\Topic;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use PhpParser\Node\Expr\Cast\Object_;
 use Throwable;
 
 class dashboardController extends Controller

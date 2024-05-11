@@ -120,7 +120,7 @@ class paymentController extends Controller
                     <p style='color: #555;'>Your payment was successful. We appreciate your support!</p>
                     <p style='color: #555;'>Click the button below to go back home:</p>
                     <a style='display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ff8c00; color: #fff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s ease;'
-                        href='http://localhost:5000'>Back Home</a>
+                        href='http://tuchop.com/usage'>Back Home</a>
                     <p style='color: #555;'>Thanks for the transaction, by the way. 🤗</p>
                 </div>
             </body>
@@ -145,7 +145,7 @@ class paymentController extends Controller
                     <p style='color: #555;'>We apologize for the inconvenience. It seems there was an issue with your payment.</p>
                     <p style='color: #555;'>Click the button below to retry:</p>
                     <a style='display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #dc3545; color: #fff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s ease;'
-                        href='http://localhost:5000/pricing'>Retry</a>
+                        href='http://tuchop.com/usage'>Retry</a>
                     <p style='color: #555;'>We appreciate your patience and understanding. Please try again.</p>
                 </div>
             </body>
@@ -180,7 +180,10 @@ class paymentController extends Controller
     public function initializePayment(Request $request){
         $user = Auth::user();
         $now = Carbon::now();
-        $amount = ($request -> amount);
+        $amount = $request -> amount;
+        if($amount < 100){
+            return $this -> responseData("amount should be greater than 100 shillings",false,"amount should be greater than 100 shillings");
+        }
         $reference = $now->format('YmdHisv');
         $hashedReference = hash('sha256', $reference);
         $user_id = $user -> id;
@@ -245,7 +248,7 @@ class paymentController extends Controller
                     <p style='color: #555;'>Your payment was successful. We appreciate your support!</p>
                     <p style='color: #555;'>Click the button below to go back home:</p>
                     <a style='display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ff8c00; color: #fff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s ease;'
-                        href='http://tuchop.com'>Back Home</a>
+                        href='http://tuchop.com/usage'>Back Home</a>
                     <p style='color: #555;'>Thanks for the transaction, by the way. 🤗</p>
                 </div>
             </body>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Blogcontroller;
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\mavfitController;
 use App\Http\Controllers\notesController;
@@ -22,6 +23,7 @@ Route::get("/v1/express-callback", [paymentController::class,'expressCallback'])
 Route::post("/v1/get-notes", [notesController ::class, 'getNotes']);
 Route::post("/v1/get-topic-notes", [notesController ::class, 'getTopic']);
 Route::post("/v1/mavfit-form", [mavfitController ::class, 'submitData']);
+Route::post("/v1/get-blog", [Blogcontroller ::class, 'getBlog']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -58,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/dashboard-overview", [dashboardController::class,'accountOverview']);
    Route::post("/v1/edit-user", [userController ::class, 'EditUser']);
    Route::post("/v1/pin-auth", [userController ::class, 'validatePin']);
+   Route::post("/v1/create-blog", [Blogcontroller ::class, 'createBlog']);
    
 });
 

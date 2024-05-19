@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post("/v1/dashboard-general", [dashboardController::class,'general']);
    Route::post("/v1/dashboard-overview", [dashboardController::class,'accountOverview']);
    Route::post("/v1/edit-user", [userController ::class, 'EditUser']);
+   Route::post("/v1/pin-auth", [userController ::class, 'validatePin']);
    
 });
 

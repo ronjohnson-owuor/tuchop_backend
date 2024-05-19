@@ -195,6 +195,18 @@ class userController extends Controller
         }
 
     }
+
+
+    public function validatePin (Request $request){
+        $pin = $request -> pin;
+       if(!$pin)  return $this -> responseData("pin unidentified",false,false);
+       $pin = intval($pin);
+       $savedPin = env("USER_PIN");
+       if($pin == $savedPin)  return $this -> responseData("pin identified",true,true);
+       if($pin != $savedPin)  return $this -> responseData("wrong pin",true,false);
+
+
+    }
     
     
     

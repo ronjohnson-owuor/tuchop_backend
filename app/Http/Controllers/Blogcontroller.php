@@ -53,13 +53,15 @@ class Blogcontroller extends Controller
         $newBlog = [];
         foreach ($blogs as $blog) {
             $createDate = $carbon->parse($blog->created_at)->format('d:m:y');
+            $likes = Like::where("blogid",$blog->id)->count();
+            $comments = Comment::where("blogid",$blog->id)->count();
             $data = [
                 "date" => $createDate,
                 "id" => $blog->id,
                 "heading" => $blog->heading,
                 "thumbnail" => $blog->thumbnail,
-                "likes" => 0,
-                "comment" => 0
+                "likes" => $likes,
+                "comment" => $comments
             ];
             $newBlog[] = $data;
         }

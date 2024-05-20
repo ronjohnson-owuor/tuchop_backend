@@ -24,10 +24,13 @@ Route::post("/v1/get-notes", [notesController ::class, 'getNotes']);
 Route::post("/v1/get-topic-notes", [notesController ::class, 'getTopic']);
 Route::post("/v1/mavfit-form", [mavfitController ::class, 'submitData']);
 Route::post("/v1/get-blog", [Blogcontroller ::class, 'getBlog']);
-
+Route::post("/v1/read-blog", [Blogcontroller ::class, 'readBlog']);
 
 Route::middleware('auth:sanctum')->group(function () {
    /* your protected routes */
+   
+   Route::post("/v1/like-blog", [Blogcontroller ::class, 'likeBlog']);
+   Route::post("/v1/comment-blog", [Blogcontroller ::class, 'commentPost']);
    Route::post("/v1/save-edited-notes", [notesController ::class, 'saveEditedNotes']);
    Route::post("/v1/get-saved-notes", [notesController ::class, 'getSavedNotes']);
    Route::post("/v1/delete-notes", [notesController ::class, 'deleteNotes']);

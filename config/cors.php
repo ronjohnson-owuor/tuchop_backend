@@ -22,7 +22,6 @@ return [
     'allowed_origins' => [
         'https://www.tuchop.com',
         'https://tuchop.com',
-        'http://localhost:5000',
         'http://localhost:3000'
     ],
 
